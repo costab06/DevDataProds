@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>A Comparison of a Linear Model with Neural Networks for Solubility Data</title>
+  <meta charset="utf-8">
+  <meta name="description" content="A Comparison of a Linear Model with Neural Networks for Solubility Data">
+  <meta name="author" content="Brian Costa">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>A Comparison of a Linear Model with Neural Networks for Solubility Data</h1>
+    <h2>Applying models to solubility data from &quot;Applied Predictive Modeling&quot;</h2>
+    <p>Brian Costa<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Background</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>This application builds 3 predictive models in order to compare the performance of a linear model with two variations of neural networks in the context of compound solubility data.</p>
+
+<p>The source data comes from &quot;Applied Predictive Modeling&quot; by Kuhn and Johnson, and is described in chapter 6.1 - &quot;Case Study: Quantitative Structure-Activity Releationship Modeling&quot;. In summary the data contains a large number of predictors related to quantified characteristics of the compound and one response variable, the solubility of each compound.</p>
+
+<p>Code for loading the data:</p>
+
+<pre><code class="r">library(AppliedPredictiveModeling)
+data(solubility)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Approach</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>This application follows the approach outlined in section 6.2 for creating the linear regression model for the solubility data and uses those results as the baseline against which the neural network models are compared.</p>
+
+<p>The desired outcome is to determine if a non-linear neural netowrk model can achieve greater prediction accuracy with this data when compared to ordinary least squares linear regression using an unseen &quot;hold out&quot; test set.</p>
+
+<p>Neural networks are highly non-linear systems that are iteratively adjusted through supervised learning.  They have a number of tunable parameters for which no closed form optimization formula exists - it&#39;s all just trial and error.  Primers on neural networks include &quot;Neural Networks for Pattern Recognition&quot; - Christopher M. Bishop, and &quot;Neurcomputing&quot; - Robert Hecht-Nielsen</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Approach</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Given the nature of the system NNs are prone to overfitting the training data resulting in poor generalization.  In this application an adjustable regularization parameter is included in an attempt to penalize large coefficients in the final model in an attempt to fight overfitting.  Additionally it is possible to adjust the number of neurons in the hidden layer (the model only supports a single hidden layer), to allow the user to experiment with different network configurations.</p>
+
+<p>Can Adjust:</p>
+
+<ul>
+<li>Number of neurons in the hidden layer of the neural networks</li>
+<li>A regularization parameter (pentalty) that attempts to reduce the coefficients (weights) on the neurons</li>
+<li>The number of independent neural networks that are averaged together in the third model </li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Data</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The data that is used for all three approaches consists of Box-Cox transformed continuous and binary predictors with the high correlation predictors removed so that no absolute pairwise correlations greater than 0.75 exist.  The remaining predictors are used to predict a continuous &quot;solubility&quot; variable.</p>
+
+<pre><code class="r">ncol(trainingData)
+</code></pre>
+
+<pre><code>## [1] 141
+</code></pre>
+
+<pre><code class="r">nrow(trainingData)
+</code></pre>
+
+<pre><code>## [1] 951
+</code></pre>
+
+<pre><code class="r">nrow(testingData)
+</code></pre>
+
+<pre><code>## [1] 316
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>The Models</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>lm - The baseline model is an ordinary least squares regression linear model and is fit when the application starts since it is a static model.</p>
+
+<p>single NNet - This is a single neural network where the user has the ability to adjust the number of hidden neurons in the model and the regularization parameter that is used to coerce the neural network weights toward &quot;0&quot; in an attempt to fight the NNs natural tendency to over-fit the training data.</p>
+
+<p>averaged NNets - This is a model with the average response from a number of independently trained NNs are averaged to produce a prediction.  The reason for this is that by their natrure NNs tend to train to &quot;local optima&quot; in their models rather than a &quot;global optima&quot;, and better results can often be had using multiple networks and then averaging the results.  This is not guarenteed though.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>Results</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>I&#39;ve run the models a number of times and typically the single neural network does not perform as well as the linear regression (higher RMSE and lower RSquared).  The single neural network is starting from a different randomly initialized starting point.</p>
+
+<p>The averaged approach to the neural networks is capable of perfroming better than the linear model, but not always and rarely by much.</p>
+
+<p>Generally the linear model works very well with this data and </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Background'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Approach'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Approach'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Data'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='The Models'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Results'>
+         6
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
