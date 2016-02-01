@@ -1,6 +1,6 @@
 shinyUI(
   pageWithSidebar(
-    headerPanel("Illustrating Inputs"),
+    headerPanel("Comparing A Linear Model with 2 Neural Network Models"),
     sidebarPanel(
       numericInput("numHiddenNodes", "Number of hidden nodes in the neural network",2,min = 1, max = 10, step = 1),
       numericInput("inputDecay", "Decay of weights during training (regularization parameter)",
@@ -28,7 +28,8 @@ shinyUI(
             and the number of neural networks to use when averaging."),
           p("In the \"Summary\" tab is a display of the RMSE and RSquared statistics for the three approaches, and in the \"Residuals\" tab 
             are plots of the residuals from testing the models."),
-          p("Please allow some time for the page to load, computing the neural networks is compuationally intensive.")
+          p("Please allow some time for the page to load, computing the neural networks is compuationally intensive.  The filds in the 
+            \"Summary\" tab and the plots in the \"Residuals\" tab will grey-out while updating.")
         ),
         tabPanel("Summary",
                  
@@ -52,7 +53,14 @@ shinyUI(
                  verbatimTextOutput("averageNnetRSquared")
         ),
         tabPanel("Residuals",
-                 h4("Plots go here...")
+                 h4("Residuals from linear model"),
+                 plotOutput("lmResids"),
+                 
+                 h4("Residuals from single NNet model"),
+                 plotOutput("singleNnetResids"),
+                 
+                 h4("Residuals from averaged NNet model"),
+                 plotOutput("averageNnetResids")
         )
       )
     )
